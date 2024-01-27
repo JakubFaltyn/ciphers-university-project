@@ -28,7 +28,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 
 import { Input } from "@/components/ui/input";
 
@@ -36,14 +36,21 @@ const FormSchema = z.object({
   text: z.string().min(2, {
     message: "Text must have at least 2 characters",
   }),
-  cipher: z.enum(["Caesar", "Vigenere"]),
-  action: z.enum(["encrypt", "decrypt"])
+  cipher: z.enum(["Caesar", "Vigenere", "Playfair"]),
+  action: z.enum(["encrypt", "decrypt"]),
 });
 import { ciphers } from "@/constants";
 import { useState } from "react";
+import getOutput from "@/constants/mainFunction";
 
 export default function Home() {
-  const [open, setOpen] = useState(false); 
+  const [open, setOpen] = useState(false);
+  const [modalData, setModalData] = useState({
+    input: "",
+    output: "",
+    cipher: "",
+    action: "",
+  });
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -53,8 +60,15 @@ export default function Home() {
   });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
+    let result = getOutput(data.cipher, data.action, data.text);
+
+    setModalData({
+      input: data.text,
+      output: result as string,
+      cipher: data.cipher,
+      action: data.action,
+    });
     setOpen(true);
-    form.reset();
   }
 
   return (
@@ -89,7 +103,10 @@ export default function Home() {
               <FormItem>
                 <FormLabel>Cipher</FormLabel>
                 <FormControl>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <SelectTrigger className="">
                       <SelectValue placeholder="Select a cipher" />
                     </SelectTrigger>
@@ -111,11 +128,14 @@ export default function Home() {
             name="action"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Cipher</FormLabel>
+                <FormLabel>Action</FormLabel>
                 <FormControl>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <SelectTrigger className="">
-                      <SelectValue placeholder="Select a cipher" />
+                      <SelectValue placeholder="Select an action" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="encrypt">Encrypt</SelectItem>
@@ -134,10 +154,30 @@ export default function Home() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Are you absolutely sure?</DialogTitle>
+            <DialogTitle>
+              {modalData.cipher} {modalData.action}
+            </DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete your
-              account and remove your data from our servers.
+              <div className="mt-6 border-t border-gray-100">
+                <dl className="divide-y divide-gray-100">
+                  <div className="bg-gray-50 px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-3">
+                    <dt className="text-sm font-medium leading-6 text-gray-900">
+                      Input
+                    </dt>
+                    <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                      {modalData.input}
+                    </dd>
+                  </div>
+                  <div className="bg-white px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-3">
+                    <dt className="text-sm font-medium leading-6 text-gray-900">
+                    Output
+                    </dt>
+                    <dd className="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                      {modalData.output}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
             </DialogDescription>
           </DialogHeader>
         </DialogContent>
