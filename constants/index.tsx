@@ -8,4 +8,7 @@ export const ciphers = [
     {
         name: "Polybius",
     },
+    {
+        name: "Trithemius",
+    },
 ]

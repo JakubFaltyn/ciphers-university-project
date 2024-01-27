@@ -36,7 +36,7 @@ const FormSchema = z.object({
   text: z.string().min(2, {
     message: "Text must have at least 2 characters",
   }),
-  cipher: z.enum(["Caesar", "Vigenere", "Polybius"]),
+  cipher: z.enum(["Caesar", "Vigenere", "Polybius", "Trithemius"]),
   action: z.enum(["encrypt", "decrypt"]),
 });
 import { ciphers } from "@/constants";

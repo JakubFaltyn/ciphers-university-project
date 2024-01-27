@@ -22,6 +22,12 @@ export default function getOutput(
         } else {
             return polybiusDecrypt(input);
         }
+    case "Trithemius":
+        if (action == "encrypt") {
+            return trithemiusEncrypt(input);
+        } else {
+            return trithemiusDecrypt(input);
+        }
   }
 }
 
@@ -178,6 +184,52 @@ const polybiusSquare = [
         } else {
           output += '?'; // A way to mark invalid coordinates
         }
+      }
+    }
+  
+    return output;
+  }
+  
+  function trithemiusEncrypt(input: string) {
+    const polishAlphabet = 'aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż';
+    let output = '';
+  
+    for (let i = 0; i < input.length; i++) {
+      const char = input[i];
+      const isUpperCase = char === char.toUpperCase();
+      let index = polishAlphabet.indexOf(char.toLowerCase());
+  
+      if (index !== -1) {
+        // Found in the Polish alphabet
+        // Incrementally shift the character based on its position
+        index = (index + i) % polishAlphabet.length;
+        output += isUpperCase ? polishAlphabet[index].toUpperCase() : polishAlphabet[index];
+      } else {
+        // Character not in Polish alphabet, leave unchanged
+        output += char;
+      }
+    }
+  
+    return output;
+  }
+  
+  function trithemiusDecrypt(input: string) {
+    const polishAlphabet = 'aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż';
+    let output = '';
+  
+    for (let i = 0; i < input.length; i++) {
+      const char = input[i];
+      const isUpperCase = char === char.toUpperCase();
+      let index = polishAlphabet.indexOf(char.toLowerCase());
+  
+      if (index !== -1) {
+        // Found in the Polish alphabet
+        // Reverse the incremental shift based on its position
+        index = (index - i + polishAlphabet.length) % polishAlphabet.length;
+        output += isUpperCase ? polishAlphabet[index].toUpperCase() : polishAlphabet[index];
+      } else {
+        // Character not in Polish alphabet, leave unchanged
+        output += char;
       }
     }
   
