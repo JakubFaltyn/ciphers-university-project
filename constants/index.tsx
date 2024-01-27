@@ -6,6 +6,6 @@ export const ciphers = [
         name: "Vigenere",
     },
     {
-        name: "Playfair",
+        name: "Polybius",
     },
 ]

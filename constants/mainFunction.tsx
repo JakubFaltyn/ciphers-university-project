@@ -12,95 +12,175 @@ export default function getOutput(
       }
     case "Vigenere":
       if (action == "encrypt") {
-        return vigenereEncrypt(input);
+        return vigenereEncrypt(input, "abc");
       } else {
-        return vigenereDecrypt(input);
+        return vigenereDecrypt(input, "abc");
       }
-    case "Playfair":
+    case "Polybius":
         if (action == "encrypt") {
-            return playfairEncrypt(input);
+            return polybiusEncrypt(input);
         } else {
-            return playfairDecrypt(input);
+            return polybiusDecrypt(input);
         }
   }
 }
 
 function caesarEncrypt(input: string) {
+  const polishAlphabet = "aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż";
+  const shift = 3;
   let output = "";
+
   for (let i = 0; i < input.length; i++) {
-    let char = input[i];
-    if (char.match(/[a-z]/i)) {
-      let code = input.charCodeAt(i);
-      if (code >= 65 && code <= 90) {
-        char = String.fromCharCode(((code - 65 + 3) % 26) + 65);
-      } else if (code >= 97 && code <= 122) {
-        char = String.fromCharCode(((code - 97 + 3) % 26) + 97);
-      }
+    const char = input[i];
+    const isUpperCase = char === char.toUpperCase();
+    let index = polishAlphabet.indexOf(char.toLowerCase());
+
+    if (index !== -1) {
+      // Found in the Polish alphabet
+      index = (index + shift) % polishAlphabet.length;
+      output += isUpperCase
+        ? polishAlphabet[index].toUpperCase()
+        : polishAlphabet[index];
+    } else {
+      // Character not in Polish alphabet, leave unchanged
+      output += char;
     }
-    output += char;
   }
+
   return output;
 }
 
 function caesarDecrypt(input: string) {
+  const polishAlphabet = "aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż";
+  const shift = 3;
   let output = "";
+
   for (let i = 0; i < input.length; i++) {
-    let char = input[i];
-    if (char.match(/[a-z]/i)) {
-      let code = input.charCodeAt(i);
-      if (code >= 65 && code <= 90) {
-        char = String.fromCharCode(((code - 65 - 3 + 26) % 26) + 65);
-      } else if (code >= 97 && code <= 122) {
-        char = String.fromCharCode(((code - 97 - 3 + 26) % 26) + 97);
+    const char = input[i];
+    const isUpperCase = char === char.toUpperCase();
+    let index = polishAlphabet.indexOf(char.toLowerCase());
+
+    if (index !== -1) {
+      // Found in the Polish alphabet
+      index = (index - shift + polishAlphabet.length) % polishAlphabet.length;
+      output += isUpperCase
+        ? polishAlphabet[index].toUpperCase()
+        : polishAlphabet[index];
+    } else {
+      // Character not in Polish alphabet, leave unchanged
+      output += char;
+    }
+  }
+
+  return output;
+}
+
+function vigenereEncrypt(input: string, key: string) {
+  const polishAlphabet = "aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż";
+  let output = "";
+  let j = 0;
+
+  for (let i = 0; i < input.length; i++) {
+    const currentChar = input[i];
+    const isUpperCase = currentChar === currentChar.toUpperCase();
+    let index = polishAlphabet.indexOf(currentChar.toLowerCase());
+
+    if (index !== -1) {
+      const keyIndex = polishAlphabet.indexOf(
+        key[j % key.length].toLowerCase()
+      );
+      index = (index + keyIndex) % polishAlphabet.length;
+      output += isUpperCase
+        ? polishAlphabet[index].toUpperCase()
+        : polishAlphabet[index];
+      j++;
+    } else {
+      output += currentChar;
+    }
+  }
+
+  return output;
+}
+
+function vigenereDecrypt(input: string, key: string) {
+  const polishAlphabet = "aąbcćdeęfghijklłmnńoópqrsśtuvwxyzźż";
+  let output = "";
+  let j = 0;
+
+  for (let i = 0; i < input.length; i++) {
+    const currentChar = input[i];
+    const isUpperCase = currentChar === currentChar.toUpperCase();
+    let index = polishAlphabet.indexOf(currentChar.toLowerCase());
+
+    if (index !== -1) {
+      const keyIndex = polishAlphabet.indexOf(
+        key[j % key.length].toLowerCase()
+      );
+      index =
+        (index - keyIndex + polishAlphabet.length) % polishAlphabet.length;
+      output += isUpperCase
+        ? polishAlphabet[index].toUpperCase()
+        : polishAlphabet[index];
+      j++;
+    } else {
+      output += currentChar;
+    }
+  }
+
+  return output;
+}
+
+// Polybius square
+
+// Initialize the Polybius square for the Polish alphabet
+const polybiusSquare = [
+    ['a', 'ą', 'b', 'c', 'ć', 'd'],
+    ['e', 'ę', 'f', 'g', 'h', 'i'],
+    ['j', 'k', 'l', 'ł', 'm', 'n'],
+    ['ń', 'o', 'ó', 'p', 'r', 's'],
+    ['ś', 't', 'u', 'w', 'y', 'z'],
+    ['ź', 'ż', '-', '-', '-', '-'] // "-" can be used for spaces or punctuation
+  ];
+  
+  // Function to encrypt plaintext using the Polybius square
+  function polybiusEncrypt(input: string) {
+    let output = '';
+    for (let char of input.toLowerCase()) {
+      let found = false;
+      for (let row = 0; row < polybiusSquare.length && !found; row++) {
+        for (let col = 0; col < polybiusSquare[row].length; col++) {
+          if (polybiusSquare[row][col] === char) {
+            // Append coordinates, adjusted for human-friendly indexing (1-based)
+            output += `${row + 1}${col + 1} `;
+            found = true;
+            break;
+          }
+        }
+      }
+      if (!found) {
+        output += '00 '; // A way to handle characters not found, adjust as needed
       }
     }
-    output += char;
+    return output.trim();
   }
-  return output;
-}
-
-function vigenereEncrypt(input: string) {
-  let output = "";
-  let key = "key";
-  let j = 0;
-
-  for (let i = 0; i < input.length; i++) {
-    const currentChar = input[i];
-    if (currentChar.match(/[a-z]/i)) {
-      // Check if it's an alphabetic character
-      const charCode = currentChar.charCodeAt(0);
-      const offset = charCode >= 65 && charCode <= 90 ? 65 : 97; // Uppercase or lowercase
-      const keyCharCode = key[j % key.length].toUpperCase().charCodeAt(0) - 65;
-      output += String.fromCharCode(
-        ((charCode - offset + keyCharCode) % 26) + offset
-      );
-      j++;
-    } else {
-      output += currentChar; // Non-alphabetic characters are not changed
+  
+  // Function to decrypt ciphertext using the Polybius square
+  function polybiusDecrypt(input: string) {
+    let output = '';
+    const pairs = input.match(/\d{2}/g); // Match pairs of digits
+  
+    if (pairs) {
+      for (let pair of pairs) {
+        const row = parseInt(pair[0], 10) - 1; // Adjust back to 0-based indexing
+        const col = parseInt(pair[1], 10) - 1;
+        if (row >= 0 && row < polybiusSquare.length && col >= 0 && col < polybiusSquare[row].length) {
+          output += polybiusSquare[row][col];
+        } else {
+          output += '?'; // A way to mark invalid coordinates
+        }
+      }
     }
+  
+    return output;
   }
-  return output;
-}
-
-function vigenereDecrypt(input: string) {
-  let output = "";
-  let key = "key";
-  let j = 0;
-
-  for (let i = 0; i < input.length; i++) {
-    const currentChar = input[i];
-    if (currentChar.match(/[a-z]/i)) {
-      // Check if it's an alphabetic character
-      const charCode = currentChar.charCodeAt(0);
-      const offset = charCode >= 65 && charCode <= 90 ? 65 : 97; // Uppercase or lowercase
-      const keyCharCode = key[j % key.length].toUpperCase().charCodeAt(0) - 65;
-      output += String.fromCharCode(
-        ((charCode - offset - keyCharCode + 26) % 26) + offset
-      );
-      j++;
-    } else {
-      output += currentChar; // Non-alphabetic characters are not changed
-    }
-  }
-  return output;
-}
+  
